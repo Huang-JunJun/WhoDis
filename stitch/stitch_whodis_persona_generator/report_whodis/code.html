@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WhoDis - 个人画像报告</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-background": "#181c1e",
+                    "surface-dim": "#d7dadc",
+                    "primary-fixed": "#d9e3f9",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed": "#121c2c",
+                    "error-container": "#ffdad6",
+                    "outline": "#75777d",
+                    "tertiary-fixed-dim": "#bac8da",
+                    "surface-container-highest": "#e0e3e5",
+                    "inverse-on-surface": "#eef1f3",
+                    "on-surface-variant": "#45474c",
+                    "surface-container": "#ebeef0",
+                    "surface-container-low": "#f1f4f6",
+                    "on-tertiary": "#ffffff",
+                    "primary-container": "#2d3748",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-container": "#2a3846",
+                    "on-surface": "#181c1e",
+                    "tertiary": "#152230",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#3b4857",
+                    "on-secondary-fixed-variant": "#39485c",
+                    "inverse-primary": "#bdc7dc",
+                    "secondary-container": "#d1e1fa",
+                    "inverse-surface": "#2d3133",
+                    "on-primary-container": "#96a0b5",
+                    "on-secondary-container": "#556479",
+                    "surface": "#f7fafc",
+                    "secondary-fixed-dim": "#b8c8e0",
+                    "on-tertiary-fixed": "#0f1d2a",
+                    "surface-variant": "#e0e3e5",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#c5c6cd",
+                    "surface-container-high": "#e5e9eb",
+                    "on-tertiary-container": "#93a1b3",
+                    "secondary": "#515f74",
+                    "primary-fixed-dim": "#bdc7dc",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "primary": "#182232",
+                    "tertiary-fixed": "#d6e4f7",
+                    "surface-bright": "#f7fafc",
+                    "on-primary-fixed-variant": "#3d4759",
+                    "surface-tint": "#555f71",
+                    "background": "#f7fafc",
+                    "secondary-fixed": "#d4e4fc",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xl": "48px",
+                    "xxl": "80px",
+                    "container-max": "800px",
+                    "xs": "4px",
+                    "sm": "8px",
+                    "unit": "4px",
+                    "md": "16px",
+                    "gutter": "24px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "h1": ["Inter", "sans-serif"],
+                    "body-sm": ["Inter", "sans-serif"],
+                    "label": ["Inter", "sans-serif"],
+                    "h3": ["Inter", "sans-serif"],
+                    "h2": ["Inter", "sans-serif"],
+                    "body-lg": ["Inter", "sans-serif"],
+                    "body-md": ["Inter", "sans-serif"]
+            },
+            "fontSize": {
+                    "h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400"}],
+                    "label": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "h3": ["18px", {"lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "500"}],
+                    "h2": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased pt-16 min-h-screen flex flex-col">
+<!-- TopAppBar (From JSON) -->
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 shadow-sm shadow-slate-200/50 dark:shadow-none">
+<div class="flex justify-between items-center h-16 px-6 max-w-[800px] mx-auto">
+<div class="text-lg font-bold tracking-tighter text-slate-900 dark:text-white">WhoDis</div>
+<div class="flex items-center gap-4 hidden">
+<!-- Search bar hidden per JSON -->
+</div>
+</div>
+</header>
+<main class="flex-grow max-w-container-max mx-auto w-full px-gutter">
+<!-- Report Header -->
+<div class="pt-xxl pb-xl border-b border-outline-variant/30 mb-xl flex flex-col md:flex-row justify-between items-start md:items-end gap-lg">
+<div class="max-w-[500px]">
+<h1 class="font-h1 text-h1 text-on-background mb-sm">WhoDis 个人画像报告</h1>
+<p class="font-body-md text-body-md text-surface-tint">这不是标签，也不是诊断，而是一份基于本次选择路径生成的结构化个人画像。</p>
+</div>
+<div class="flex flex-row gap-sm w-full md:w-auto">
+<button class="flex-1 md:flex-none px-md py-sm rounded border border-outline-variant text-on-surface-variant font-label text-label hover:bg-surface-container transition-colors flex items-center justify-center gap-xs shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+                    复制完整报告
+                </button>
+<button class="flex-1 md:flex-none px-md py-sm rounded border border-outline text-on-surface font-label text-label hover:bg-surface-container transition-colors flex items-center justify-center gap-xs shadow-sm">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+                    重新开始
+                </button>
+</div>
+</div>
+<!-- Report Content Sections -->
+<article class="space-y-xl pb-xxl">
+<!-- Section 1: 整体画像概括 -->
+<section>
+<h2 class="font-h2 text-h2 text-on-background mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">account_circle</span>
+                    整体画像概括
+                </h2>
+<div class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl p-lg shadow-[0_4px_20px_rgba(0,0,0,0.02)] font-body-lg text-body-lg text-on-surface-variant leading-relaxed">在本次评估中，你展现出较强的内在逻辑自洽性。你倾向于在行动前建立清晰的理解框架，能保持客观的观察视角。</div>
+</section>
+<!-- Section 2: 性格倾向 -->
+<section>
+<h2 class="font-h2 text-h2 text-on-background mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">tune</span>
+                    性格倾向
+                </h2>
+<div class="space-y-sm font-body-md text-body-md text-on-surface-variant"><p>表现出明显的深思熟虑，处理信息时习惯进行多维推演。你更倾向于在低刺激的环境中进行能量修复。</p></div>
+</section>
+<!-- Section 3: 行为模式 -->
+<section>
+<h2 class="font-h2 text-h2 text-on-background mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">route</span>
+                    行为模式
+                </h2>
+<div class="space-y-sm font-body-md text-body-md text-on-surface-variant"><p>任务执行中表现出前置规划周期较长的特征。一旦进入状态，你拥有极高的专注度与持续力。</p></div>
+</section>
+<!-- Section 4: 决策与行动模式 -->
+<section>
+<h2 class="font-h2 text-h2 text-on-background mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">account_tree</span>
+                    决策与行动模式
+                </h2>
+<div class="bg-surface-container-low rounded-lg p-md border border-outline-variant/30">
+<p class="font-body-md text-body-md text-on-surface-variant">决策过程高度依赖逻辑连贯性，倾向于规避潜在风险。行动触发通常建立在充分的心理建设之上。</p>
+</div>
+</section>
+<!-- Section 5: 关系互动模式 -->
+<section>
+<h2 class="font-h2 text-h2 text-on-background mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">group</span>
+                    关系互动模式
+                </h2>
+<div class="space-y-sm font-body-md text-body-md text-on-surface-variant"><p>在人际中保持温和的边界感，信任建立较为审慎。一旦确认关系，会表现出高度的责任感与准确的沟通习惯。</p></div>
+</section>
+<!-- Section 6: 压力反应模式 -->
+<section>
+<h2 class="font-h2 text-h2 text-on-background mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">compress</span>
+                    压力反应模式
+                </h2>
+<div class="space-y-sm font-body-md text-body-md text-on-surface-variant"><p>中低强度压力下能维持良好的效率，但在高频波动中倾向于暂时抽离。这是一种有效的自我平衡与保护机制。</p></div>
+</section>
+<!-- Section 7: 自我评价方式 -->
+<section>
+<h2 class="font-h2 text-h2 text-on-background mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">fact_check</span>
+                    自我评价方式
+                </h2>
+<div class="space-y-sm font-body-md text-body-md text-on-surface-variant"><p>自我评价体系主要由内部标准驱动，对外部评价保持审慎。由于对细节要求较高，偶尔会产生一定的自我施压。</p></div>
+</section>
+<!-- Section 8: 深层需求与渴望 -->
+<section>
+<h2 class="font-h2 text-h2 text-on-background mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">water_drop</span>
+                    深层需求与渴望
+                </h2>
+<div class="space-y-sm font-body-md text-body-md text-on-surface-variant"><p>核心渴望是对环境的可预测性与掌控感。你通过深化认知来获得内在的安全感，而非依赖外部附着。</p></div>
+</section>
+<!-- Section 9: 当前建议方向 -->
+<section>
+<h2 class="font-h2 text-h2 text-on-background mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">explore</span>
+                    当前建议方向
+                </h2>
+<div class="bg-surface-bright border border-outline-variant rounded-xl p-lg shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+<ul class="list-disc list-outside ml-md space-y-sm font-body-md text-body-md text-on-surface-variant">
+<li>在保持深思熟虑的同时，尝试在非核心事务中设定「时间止损点」，以减少过度推演带来的能量消耗。</li>
+<li>有意识地在沟通中加入微小的情感反馈，这有助于润滑处于初步阶段的社交关系。</li>
+<li>识别并接纳在面对突发变动时的停顿期，将其视为必要的重组过程，而非效率的损失。</li>
+</ul>
+</div>
+</section>
+<!-- Section 10: Agent Context (Prominent Card) -->
+<section class="pt-xl mt-xxl border-t border-outline-variant/30">
+<div class="bg-primary/5 rounded-xl border border-primary/20 p-lg shadow-[0_8px_30px_rgba(0,0,0,0.03)] relative overflow-hidden">
+<!-- Subtle background decoration -->
+<div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center mb-md gap-md">
+<div>
+<h3 class="font-h3 text-h3 text-on-background flex items-center gap-xs mb-xs">
+<span class="material-symbols-outlined text-primary">terminal</span>
+                                Agent 可导入上下文
+                            </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-[500px]">将此结构化数据复制并粘贴给 AI 助手（如 ChatGPT, Claude），帮助其更准确地理解您的沟通偏好和思考模型。</p>
+</div>
+<button class="shrink-0 px-md py-sm rounded bg-white border border-outline-variant text-on-surface-variant font-label text-label hover:bg-surface-container transition-colors flex items-center justify-center gap-xs shadow-sm">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+                            复制上下文
+                        </button>
+</div>
+<div class="relative z-10 bg-white border border-outline-variant/50 rounded-lg p-md overflow-x-auto shadow-inner">
+<pre class="font-body-sm text-body-sm text-on-surface-variant whitespace-pre-wrap font-mono leading-relaxed text-sm">该用户倾向于在行动前进行较多思考和风险评估，对自己要求较高，遇到不确定结果时容易先自我施压。与该用户沟通时，建议先区分现实问题、情绪问题和行动问题，再给出具体可执行的下一步。避免空泛鼓励、简单贴标签或制造额外焦虑。</pre>
+</div>
+</div>
+</section>
+</article>
+</main>
+<!-- Footer (From JSON) -->
+</body></html>

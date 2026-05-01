@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WhoDis - 生成你的个人画像</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#181c1e",
+                        "surface-dim": "#d7dadc",
+                        "primary-fixed": "#d9e3f9",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#121c2c",
+                        "error-container": "#ffdad6",
+                        "outline": "#75777d",
+                        "tertiary-fixed-dim": "#bac8da",
+                        "surface-container-highest": "#e0e3e5",
+                        "inverse-on-surface": "#eef1f3",
+                        "on-surface-variant": "#45474c",
+                        "surface-container": "#ebeef0",
+                        "surface-container-low": "#f1f4f6",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#2d3748",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#2a3846",
+                        "on-surface": "#181c1e",
+                        "tertiary": "#152230",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3b4857",
+                        "on-secondary-fixed-variant": "#39485c",
+                        "inverse-primary": "#bdc7dc",
+                        "secondary-container": "#d1e1fa",
+                        "inverse-surface": "#2d3133",
+                        "on-primary-container": "#96a0b5",
+                        "on-secondary-container": "#556479",
+                        "surface": "#f7fafc",
+                        "secondary-fixed-dim": "#b8c8e0",
+                        "on-tertiary-fixed": "#0f1d2a",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c5c6cd",
+                        "surface-container-high": "#e5e9eb",
+                        "on-tertiary-container": "#93a1b3",
+                        "secondary": "#515f74",
+                        "primary-fixed-dim": "#bdc7dc",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "primary": "#182232",
+                        "tertiary-fixed": "#d6e4f7",
+                        "surface-bright": "#f7fafc",
+                        "on-primary-fixed-variant": "#3d4759",
+                        "surface-tint": "#555f71",
+                        "background": "#f7fafc",
+                        "secondary-fixed": "#d4e4fc",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xl": "48px",
+                        "xxl": "80px",
+                        "container-max": "800px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "unit": "4px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "h1": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label": ["Inter"],
+                        "h3": ["Inter"],
+                        "h2": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h1": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "letterSpacing": "0", "fontWeight": "400" }],
+                        "label": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "h3": ["18px", { "lineHeight": "1.4", "letterSpacing": "0", "fontWeight": "500" }],
+                        "h2": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col">
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 shadow-sm shadow-slate-200/50 dark:shadow-none hidden md:block">
+<div class="flex justify-between items-center h-16 px-6 max-w-[800px] mx-auto">
+<div class="text-lg font-bold tracking-tighter text-slate-900 dark:text-white">WhoDis</div>
+</div>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center pb-xxl px-gutter w-full max-w-container-max mx-auto mt-16 md:mt-0 pt-xl">
+<section class="flex flex-col items-center text-center w-full mt-md mb-xl">
+<span class="font-label text-label text-secondary uppercase tracking-widest mb-md bg-surface-container-high px-3 py-1 rounded-full">WhoDis</span>
+<h1 class="font-h1 text-h1 text-on-background mb-md">生成你的个人画像</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-[600px] mb-xl">
+                通过一场由浅入深的选择式访谈，生成一份可导入 AI Agent 的个人画像报告。
+            </p>
+<button class="bg-primary text-on-primary font-h3 text-h3 px-xl py-md rounded-full hover:opacity-90 transition-opacity shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+                开始生成画像
+            </button>
+</section>
+<section class="grid grid-cols-1 md:grid-cols-3 gap-lg w-full">
+<div class="bg-surface-container-lowest rounded-xl p-lg border border-surface-variant shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex flex-col items-center text-center">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center mb-md text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">forum</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-background mb-sm">动态选择式访谈</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                    问题会根据你的选择逐步深入，不是固定题库
+                </p>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-lg border border-surface-variant shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex flex-col items-center text-center">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center mb-md text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assignment_ind</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-background mb-sm">结构化个人画像</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                    输出性格、行为、决策、关系、压力反应等画像信息
+                </p>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-lg border border-surface-variant shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex flex-col items-center text-center">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center mb-md text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<h3 class="font-h3 text-h3 text-on-background mb-sm">Agent 可导入上下文</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                    生成一段可复制给其他 AI Agent 使用的个人上下文
+                </p>
+</div>
+</section>
+</main>
+<nav class="md:hidden fixed bottom-0 w-full z-50 border-t border-t border-slate-200 dark:border-slate-800 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] fixed bottom-0 left-0 w-full flex justify-around items-center py-3 bg-white dark:bg-slate-900 pb-safe">
+<a class="flex flex-col items-center justify-center text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800 rounded-lg py-1 px-4 scale-95 transition-transform group" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-[10px] uppercase tracking-widest font-bold">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 py-1 px-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined mb-1">chat_bubble</span>
+<span class="text-[10px] uppercase tracking-widest font-bold">Interview</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 py-1 px-4 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined mb-1">account_circle</span>
+<span class="text-[10px] uppercase tracking-widest font-bold">Persona</span>
+</a>
+</nav>
+</body></html>
