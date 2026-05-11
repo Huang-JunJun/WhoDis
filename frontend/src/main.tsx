@@ -188,7 +188,6 @@ function ChatPage() {
               <div className="report-generating">
                 <Spin size="large" />
                 <Title level={2}>正在生成个人画像</Title>
-                <Paragraph>正在调用 AI Model 分析你的 30 道选择路径，这可能需要几十秒。</Paragraph>
                 <Text className="report-generating-note">请保持当前页面打开，生成完成后会自动进入报告页。</Text>
               </div>
             ) : (
@@ -335,6 +334,35 @@ function ReportPage() {
             <Card className="context-card">
               <Title level={2}>Skill.md 内容</Title>
               <pre>{report.skillMarkdown}</pre>
+            </Card>
+
+            <Card className="usage-card">
+              <Title level={2}>如何使用这份画像？</Title>
+              <Paragraph>
+                这份画像可以作为你的个人上下文，复制到其他 AI 工具中，帮助对方更好理解你的思考方式、行动习惯和沟通偏好。
+              </Paragraph>
+              <div className="usage-grid">
+                <div>
+                  <Text className="usage-label">普通对话</Text>
+                  <Paragraph>复制给常用 AI 对话工具，让它在给建议前先理解你的背景。</Paragraph>
+                </div>
+                <div>
+                  <Text className="usage-label">自定义助手</Text>
+                  <Paragraph>放到 Agent、Bot 或 Assistant 的 Instructions、Knowledge、Skill、Memory、Persona 等配置中。</Paragraph>
+                </div>
+                <div>
+                  <Text className="usage-label">辅助决策</Text>
+                  <Paragraph>用于职业选择、学习计划、情绪复盘、项目推进、关系分析等需要结合个人偏好的场景。</Paragraph>
+                </div>
+              </div>
+              <div className="copy-guide">
+                <Text>复制哪个？</Text>
+                <ul>
+                  <li>快速使用：复制 Agent 上下文</li>
+                  <li>完整导入：复制 Skill.md</li>
+                  <li>自己保存：复制完整报告</li>
+                </ul>
+              </div>
             </Card>
           </>
         ) : (

@@ -332,23 +332,69 @@ button {
 }
 
 .report-card,
-.context-card {
+.context-card,
+.usage-card {
   border-color: rgba(197, 198, 205, 0.55);
   box-shadow: var(--shadow);
 }
 
 .report-card h2.ant-typography,
-.context-card h2.ant-typography {
+.context-card h2.ant-typography,
+.usage-card h2.ant-typography {
   margin-bottom: 16px;
   font-size: 24px;
   font-weight: 500;
 }
 
 .report-card .ant-typography,
-.context-card .ant-typography {
+.context-card .ant-typography,
+.usage-card .ant-typography {
   color: var(--muted);
   font-size: 16px;
   line-height: 1.7;
+}
+
+.usage-card {
+  margin-top: 24px;
+}
+
+.usage-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.usage-grid > div {
+  border: 1px solid rgba(197, 198, 205, 0.5);
+  border-radius: 8px;
+  background: var(--surface-low);
+  padding: 16px;
+}
+
+.usage-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.copy-guide {
+  border-top: 1px solid rgba(197, 198, 205, 0.5);
+  padding-top: 16px;
+}
+
+.copy-guide > .ant-typography {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.copy-guide ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.8;
 }
 
 .context-card {
@@ -381,6 +427,10 @@ button {
   }
 
   .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .usage-grid {
     grid-template-columns: 1fr;
   }
 
