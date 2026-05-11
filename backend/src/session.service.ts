@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { firstQuestion, questionBank } from "./question-bank";
 import { PrismaService } from "./prisma.service";
@@ -8,7 +8,9 @@ import { OptionId, QuestionItem } from "./types";
 @Injectable()
 export class SessionService {
   constructor(
+    @Inject(PrismaService)
     private readonly prisma: PrismaService,
+    @Inject(SelectionService)
     private readonly selectionService: SelectionService,
   ) {}
 
@@ -33,12 +35,26 @@ export class SessionService {
     const currentQuestion = session.currentQuestionId
       ? await this.prisma.question.findUnique({ where: { id: session.currentQuestionId } })
       : null;
+    const currentAnswer = currentQuestion
+      ? await this.prisma.answer.findUnique({
+          where: {
+            sessionId_questionId: {
+              sessionId: id,
+              questionId: currentQuestion.id,
+            },
+          },
+        })
+      : null;
+    const canGoBack = currentQuestion
+      ? currentQuestion.orderNo > 1
+      : session.questionCount > 0 && session.status === "ready_to_report";
 
     return {
       id: session.id,
       status: session.status,
       questionCount: session.questionCount,
       canGenerateReport: session.canGenerateReport,
+      canGoBack,
       currentQuestion: currentQuestion
         ? {
             id: currentQuestion.id,
@@ -47,6 +63,8 @@ export class SessionService {
             stage: currentQuestion.stage,
             question: currentQuestion.questionText,
             options: currentQuestion.optionsJson,
+            orderNo: currentQuestion.orderNo,
+            selectedOptionId: currentAnswer?.selectedOptionId ?? null,
           }
         : null,
     };
@@ -75,6 +93,28 @@ export class SessionService {
       throw new BadRequestException("无效的选项");
     }
 
+    await this.prisma.answer.deleteMany({
+      where: {
+        sessionId,
+        question: {
+          sessionId,
+          orderNo: {
+            gt: question.orderNo,
+          },
+        },
+      },
+    });
+    await this.prisma.question.deleteMany({
+      where: {
+        sessionId,
+        orderNo: {
+          gt: question.orderNo,
+        },
+      },
+    });
+    await this.prisma.report.deleteMany({ where: { sessionId } });
+    await this.prisma.answer.deleteMany({ where: { sessionId, questionId: question.id } });
+
     await this.prisma.answer.create({
       data: {
         sessionId,
@@ -89,7 +129,7 @@ export class SessionService {
     const answers = await this.prisma.answer.findMany({
       where: { sessionId },
       include: { question: true },
-      orderBy: { createdAt: "asc" },
+      orderBy: { question: { orderNo: "asc" } },
     });
     const selection = this.selectionService.selectNextQuestion(answers);
 
@@ -111,8 +151,47 @@ export class SessionService {
       where: { id: sessionId },
       data: {
         currentQuestionId: nextQuestion.id,
+        status: "interviewing",
         questionCount: answers.length,
         canGenerateReport: false,
+      },
+    });
+
+    return this.getSession(sessionId);
+  }
+
+  async previousQuestion(sessionId: string) {
+    const session = await this.prisma.session.findUnique({ where: { id: sessionId } });
+    if (!session) {
+      throw new NotFoundException("Session not found");
+    }
+
+    const currentQuestion = session.currentQuestionId
+      ? await this.prisma.question.findUnique({ where: { id: session.currentQuestionId } })
+      : null;
+    const targetQuestion = currentQuestion
+      ? await this.prisma.question.findFirst({
+          where: {
+            sessionId,
+            orderNo: currentQuestion.orderNo - 1,
+          },
+        })
+      : await this.prisma.question.findFirst({
+          where: { sessionId },
+          orderBy: { orderNo: "desc" },
+        });
+
+    if (!targetQuestion) {
+      throw new BadRequestException("当前已经是第一题");
+    }
+
+    await this.prisma.session.update({
+      where: { id: sessionId },
+      data: {
+        status: "interviewing",
+        currentQuestionId: targetQuestion.id,
+        canGenerateReport: false,
+        questionCount: await this.prisma.answer.count({ where: { sessionId } }),
       },
     });
 

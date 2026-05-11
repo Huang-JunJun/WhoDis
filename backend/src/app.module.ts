@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { LlmService } from "./llm.service";
 import { PrismaService } from "./prisma.service";
 import { ReportService } from "./report.service";
 import { SelectionService } from "./selection.service";
@@ -7,6 +8,6 @@ import { SessionService } from "./session.service";
 
 @Module({
   controllers: [SessionController],
-  providers: [PrismaService, ReportService, SelectionService, SessionService],
+  providers: [LlmService, PrismaService, ReportService, SelectionService, SessionService],
 })
 export class AppModule {}

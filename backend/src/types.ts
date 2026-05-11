@@ -36,3 +36,9 @@ export type ReportContent = {
   pressureDefense: string;
   deepNeeds: string;
 };
+
+export type LlmReportResult = {
+  contentJson: ReportContent;
+  agentContext: string;
+  skillMarkdown: string;
+};

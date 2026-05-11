@@ -32,9 +32,8 @@ export class SelectionService {
     const questionCount = answers.length;
     const moduleCounts = this.getModuleCounts(answers);
     const missingModules = this.getMissingModules(moduleCounts);
-    const hasCoreCoverage = missingModules.length === 0;
 
-    if ((questionCount >= 15 && hasCoreCoverage) || questionCount >= 30) {
+    if (questionCount >= 30) {
       return { canGenerateReport: true, nextQuestion: null };
     }
 
@@ -76,7 +75,7 @@ export class SelectionService {
 
   canGenerateReport(answers: AnswerSnapshot[]) {
     const questionCount = answers.length;
-    return questionCount >= 30 || (questionCount >= 15 && this.getMissingModules(this.getModuleCounts(answers)).length === 0);
+    return questionCount >= 30;
   }
 
   getModuleCounts(answers: AnswerSnapshot[]) {

@@ -14,6 +14,8 @@ export type CurrentQuestion = {
   stage: string;
   question: string;
   options: QuestionOption[];
+  orderNo: number;
+  selectedOptionId: string | null;
 };
 
 export type SessionResponse = {
@@ -21,6 +23,7 @@ export type SessionResponse = {
   status: SessionStatus;
   questionCount: number;
   canGenerateReport: boolean;
+  canGoBack: boolean;
   currentQuestion: CurrentQuestion | null;
 };
 

@@ -41,7 +41,7 @@ function Shell({ children, count }: { children: React.ReactNode; count?: number 
           <button className="brand-button" onClick={() => navigate("/")}>
             WhoDis
           </button>
-          {typeof count === "number" ? <Text className="topbar-count">已完成 {count} 道选择</Text> : null}
+          {typeof count === "number" ? <Text className="topbar-count">已完成 {count} 道选择题</Text> : null}
         </div>
       </Header>
       <Content>{children}</Content>
@@ -105,6 +105,7 @@ function ChatPage() {
   const [selected, setSelected] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [generatingReport, setGeneratingReport] = useState(false);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -118,16 +119,34 @@ function ChatPage() {
 
   const question = session?.currentQuestion ?? null;
 
-  async function submitAnswer() {
-    if (!sessionId || !selected) return;
+  useEffect(() => {
+    setSelected(question?.selectedOptionId ?? "");
+  }, [question?.id, question?.selectedOptionId]);
+
+  async function selectAndSubmit(optionId: string) {
+    if (!sessionId || submitting) return;
+
+    setSelected(optionId);
+    try {
+      setSubmitting(true);
+      const nextSession = await api.answerSession(sessionId, optionId);
+      setSession(nextSession);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : "提交选择失败");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function goPrevious() {
+    if (!sessionId || submitting || generatingReport || !session?.canGoBack) return;
 
     try {
       setSubmitting(true);
-      const nextSession = await api.answerSession(sessionId, selected);
-      setSession(nextSession);
-      setSelected("");
+      const previousSession = await api.previousQuestion(sessionId);
+      setSession(previousSession);
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "提交选择失败");
+      message.error(error instanceof Error ? error.message : "返回上一题失败");
     } finally {
       setSubmitting(false);
     }
@@ -137,13 +156,13 @@ function ChatPage() {
     if (!sessionId) return;
 
     try {
-      setSubmitting(true);
+      setGeneratingReport(true);
       await api.createReport(sessionId);
       navigate(`/report/${sessionId}`);
     } catch (error) {
       message.error(error instanceof Error ? error.message : "生成报告失败");
     } finally {
-      setSubmitting(false);
+      setGeneratingReport(false);
     }
   }
 
@@ -156,19 +175,38 @@ function ChatPage() {
           </div>
         ) : question ? (
           <QuestionPanel
+            canGoBack={session?.canGoBack ?? false}
             disabled={submitting}
-            onSelect={setSelected}
-            onSubmit={submitAnswer}
+            onPrevious={goPrevious}
+            onSelect={selectAndSubmit}
             question={question}
             selected={selected}
           />
         ) : session?.canGenerateReport ? (
-          <Card className="ready-card">
-            <Title level={2}>访谈信息已足够生成报告</Title>
-            <Paragraph>你已完成 {session.questionCount} 道选择，可以生成个人画像报告。</Paragraph>
-            <Button type="primary" size="large" loading={submitting} onClick={generateReport}>
-              生成个人画像
-            </Button>
+          <Card className={generatingReport ? "ready-card ready-card-generating" : "ready-card"}>
+            {generatingReport ? (
+              <div className="report-generating">
+                <Spin size="large" />
+                <Title level={2}>正在生成个人画像</Title>
+                <Paragraph>正在调用 AI Model 分析你的 30 道选择路径，这可能需要几十秒。</Paragraph>
+                <Text className="report-generating-note">请保持当前页面打开，生成完成后会自动进入报告页。</Text>
+              </div>
+            ) : (
+              <>
+                <Title level={2}>30 道题已完成</Title>
+                <Paragraph>你已完整完成本次选择式访谈，可以生成个人画像报告。</Paragraph>
+                <div className="ready-actions">
+                  {session.canGoBack ? (
+                    <Button disabled={submitting} size="large" onClick={goPrevious}>
+                      上一题
+                    </Button>
+                  ) : null}
+                  <Button type="primary" size="large" onClick={generateReport}>
+                    生成个人画像
+                  </Button>
+                </div>
+              </>
+            )}
           </Card>
         ) : (
           <Empty description="当前没有可回答的问题" />
@@ -179,21 +217,24 @@ function ChatPage() {
 }
 
 function QuestionPanel({
+  canGoBack,
   disabled,
+  onPrevious,
   onSelect,
-  onSubmit,
   question,
   selected,
 }: {
+  canGoBack: boolean;
   disabled: boolean;
+  onPrevious: () => void;
   onSelect: (id: string) => void;
-  onSubmit: () => void;
   question: CurrentQuestion;
   selected: string;
 }) {
   return (
     <section className="question-panel">
-      <Text className="module-label">当前模块：{moduleName(question.module)}</Text>
+      {/* <Text className="module-label">当前模块：{moduleName(question.module)}</Text> */}
+      <Text className="question-count">第 {question.orderNo} / 30 题</Text>
       <Title level={1}>{question.question}</Title>
       <div className="option-list">
         {question.options.map((option) => (
@@ -209,11 +250,13 @@ function QuestionPanel({
         ))}
       </div>
       <div className="action-row">
-        <Button type="primary" size="large" disabled={!selected} loading={disabled} onClick={onSubmit}>
-          下一题
-        </Button>
+        {canGoBack ? (
+          <Button disabled={disabled} size="large" onClick={onPrevious}>
+            上一题
+          </Button>
+        ) : null}
       </div>
-      <Paragraph className="interview-note">15 题前不会生成报告；信息不足时会继续补齐缺失模块。</Paragraph>
+      {/* <Paragraph className="interview-note">完整完成 30 题后才能生成报告。</Paragraph> */}
     </section>
   );
 }

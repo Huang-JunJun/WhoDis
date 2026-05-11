@@ -112,9 +112,8 @@ GET  /api/session/:id/report
 - 每个选项绑定 `tags` 和 `nextHints`
 - 已答题不会重复
 - 第一题固定为“你觉得自己平时更接近哪一种人？”
-- 至少完成 15 道题后才允许生成报告
-- 15 题后如果信息不足，会继续补齐缺失模块
-- 30 题左右兜底允许生成报告
+- 必须完整完成 30 道题后才允许生成报告
+- 15 题后会优先补齐缺失模块，但不会提前生成报告
 - 报告不输出人格类型，不做心理诊断
 
 ## 题库模块
@@ -180,6 +179,32 @@ Prisma 模型包括：
 - `Answer`
 - `Report`
 
+## DeepSeek 报告生成
+
+WhoDis V1 的题库和选题逻辑仍然完全由本地规则控制，AI 不生成题目。
+
+DeepSeek 只用于用户完成 30 题后的报告生成：
+
+- 8 个正文模块
+- Agent 可导入上下文
+- Skill.md 内容
+
+后端通过 `LlmService` 统一封装模型调用。需要在 `backend/.env` 中配置：
+
+```env
+LLM_PROVIDER="deepseek"
+DEEPSEEK_API_KEY="你的 DeepSeek API Key"
+DEEPSEEK_BASE_URL="https://api.deepseek.com"
+DEEPSEEK_MODEL="deepseek-v4-flash"
+```
+
+如果 DeepSeek 调用失败，后端会返回“模型调用失败”错误，不会写入报告。
+
+相关代码：
+
+- `backend/src/llm.service.ts`
+- `backend/src/report.service.ts`
+
 ## 验收点
 
 - 首页能创建 session 并进入访谈页
@@ -187,9 +212,8 @@ Prisma 模型包括：
 - 每题固定 4 个选项
 - 用户选择后进入不同题目路径
 - 已答题不重复
-- 15 题前不能生成报告
-- 15 题后模块覆盖足够时可生成报告
-- 30 题兜底可生成报告
+- 30 题前不能生成报告
+- 完整完成 30 题后才可生成报告
 - 报告只包含 8 个正文模块
 - 报告底部包含 Agent 上下文和 Skill.md
 - 可复制完整报告、Agent 上下文、Skill.md
