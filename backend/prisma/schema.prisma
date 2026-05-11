@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SessionStatus {
+  interviewing
+  ready_to_report
+  completed
+}
+
+model Session {
+  id                 String        @id @default(cuid())
+  status             SessionStatus @default(interviewing)
+  currentQuestionId  String?
+  questionCount      Int           @default(0)
+  canGenerateReport  Boolean       @default(false)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  questions          Question[]
+  answers            Answer[]
+  report             Report?
+}
+
+model Question {
+  id              String   @id @default(cuid())
+  sessionId       String
+  bankQuestionId  String
+  module          String
+  stage           String
+  questionText    String
+  optionsJson     Json
+  orderNo         Int
+  createdAt       DateTime @default(now())
+  session         Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  answers         Answer[]
+
+  @@index([sessionId])
+}
+
+model Answer {
+  id                  String   @id @default(cuid())
+  sessionId           String
+  questionId          String
+  selectedOptionId    String
+  selectedOptionText  String
+  selectedTags        Json
+  nextHints           Json
+  createdAt           DateTime @default(now())
+  session             Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question            Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@unique([sessionId, questionId])
+}
+
+model Report {
+  id             String   @id @default(cuid())
+  sessionId      String   @unique
+  title          String
+  contentJson    Json
+  agentContext   String
+  skillMarkdown  String
+  createdAt      DateTime @default(now())
+  session        Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}

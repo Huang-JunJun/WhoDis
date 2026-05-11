@@ -1,0 +1,17 @@
+{
+  "name": "whodis",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.5",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "PATH=$HOME/.nvm/versions/node/v22.21.1/bin:$PATH pnpm -r --parallel dev",
+    "dev:frontend": "PATH=$HOME/.nvm/versions/node/v22.21.1/bin:$PATH pnpm --filter @whodis/frontend dev",
+    "dev:backend": "PATH=$HOME/.nvm/versions/node/v22.21.1/bin:$PATH pnpm --filter @whodis/backend dev",
+    "build": "PATH=$HOME/.nvm/versions/node/v22.21.1/bin:$PATH pnpm -r build",
+    "db:generate": "PATH=$HOME/.nvm/versions/node/v22.21.1/bin:$PATH pnpm --filter @whodis/backend db:generate",
+    "db:migrate": "PATH=$HOME/.nvm/versions/node/v22.21.1/bin:$PATH pnpm --filter @whodis/backend db:migrate"
+  }
+}
