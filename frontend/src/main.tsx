@@ -88,6 +88,7 @@ function HomePage() {
           ].map(([title, body]) => (
             <Card className="feature-card" key={title}>
               <Title level={3}>{title}</Title>
+              <div className="scribble-divider" />
               <Paragraph>{body}</Paragraph>
             </Card>
           ))}
@@ -243,8 +244,14 @@ function QuestionPanel({
             key={option.id}
             onClick={() => onSelect(option.id)}
           >
+            <span className="option-tape" aria-hidden="true" />
             <span className="option-id">{option.id}</span>
             <span>{option.text}</span>
+            {selected === option.id ? (
+              <span className="selected-check" aria-hidden="true">
+                ✓
+              </span>
+            ) : null}
           </button>
         ))}
       </div>
@@ -303,10 +310,6 @@ function ReportPage() {
         ) : report ? (
           <>
             <section className="report-header">
-              <div>
-                <Title level={1}>{report.title}</Title>
-                <Paragraph>这不是标签，也不是诊断，而是一份基于本次选择路径生成的结构化个人画像。</Paragraph>
-              </div>
               <div className="report-actions">
                 <Button onClick={() => copy("完整报告", fullReportText)}>复制完整报告</Button>
                 <Button onClick={() => copy("Agent 上下文", report.agentContext)}>复制 Agent 上下文</Button>
@@ -314,6 +317,10 @@ function ReportPage() {
                 <Button type="primary" onClick={restart}>
                   重新开始
                 </Button>
+              </div>
+              <div>
+                <Title level={1}>{report.title}</Title>
+                <Paragraph>这不是标签，也不是诊断，而是一份基于本次选择路径生成的结构化个人画像。</Paragraph>
               </div>
             </section>
 
@@ -326,7 +333,7 @@ function ReportPage() {
               ))}
             </article>
 
-            <Card className="context-card">
+            <Card className="context-card context-card-agent">
               <Title level={2}>Agent 可导入上下文</Title>
               <Paragraph>{report.agentContext}</Paragraph>
             </Card>
@@ -392,9 +399,9 @@ function Root() {
       theme={{
         algorithm: theme.defaultAlgorithm,
         token: {
-          colorPrimary: "#182232",
-          borderRadius: 8,
-          fontFamily: "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+          colorPrimary: "#181919",
+          borderRadius: 10,
+          fontFamily: "Work Sans, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
         },
       }}
     >
