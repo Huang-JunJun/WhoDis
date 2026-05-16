@@ -42,3 +42,14 @@ export type LlmReportResult = {
   agentContext: string;
   skillMarkdown: string;
 };
+
+export type ReportResponse = {
+  id: string;
+  sessionId: string;
+  title: string;
+  contentJson: ReportContent;
+  agentContext: string;
+  skillMarkdown: string;
+  generationDurationMs: null | number;
+  createdAt: Date;
+};

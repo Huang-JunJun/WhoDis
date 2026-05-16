@@ -39,7 +39,8 @@ function Shell({ children, count }: { children: React.ReactNode; count?: number 
       <Header className="topbar">
         <div className="topbar-inner">
           <button className="brand-button" onClick={() => navigate("/")}>
-            WhoDis
+            <img alt="" aria-hidden="true" className="brand-logo" src="/logo.png" />
+            <span>WhoDis</span>
           </button>
           {typeof count === "number" ? <Text className="topbar-count">已完成 {count} 道选择题</Text> : null}
         </div>
@@ -70,10 +71,13 @@ function HomePage() {
     <Shell>
       <main className="home-page">
         <section className="hero">
-          <Text className="eyebrow">WhoDis</Text>
+          <Text className="eyebrow">
+            <img alt="" aria-hidden="true" className="eyebrow-logo" src="/logo.png" />
+            <span>WhoDis</span>
+          </Text>
           <Title level={1}>生成你的个人画像</Title>
           <Paragraph className="hero-subtitle">
-            通过一场由浅入深的选择式访谈，生成一份可导入 AI Agent 的个人画像报告。
+            通过由浅入深的选择，整理出属于你的个人画像与 AI Agent 上下文。
           </Paragraph>
           <Button type="primary" size="large" className="primary-cta" loading={loading} onClick={start}>
             开始生成画像
@@ -82,9 +86,9 @@ function HomePage() {
 
         <section className="feature-grid" aria-label="核心说明">
           {[
-            ["动态选择式访谈", "固定题库，路径会根据你的选择动态进入不同模块。"],
-            ["结构化个人画像", "报告只保留 8 个正文模块，聚焦行为、关系、压力和需求。"],
-            ["Agent 可导入上下文", "生成适合复制给其他 AI 助手的上下文和 Skill.md。"],
+            ["动态选择式访谈", "根据你的回答，一步步走向更贴近你的问题。"],
+            ["结构化个人画像", "把零散的感受、习惯和反应整理成清晰的自我画像。"],
+            ["Agent 可导入上下文", "让其他 AI 不只是回答你，而是更懂如何理解你。"],
           ].map(([title, body]) => (
             <Card className="feature-card" key={title}>
               <Title level={3}>{title}</Title>
@@ -194,7 +198,7 @@ function ChatPage() {
             ) : (
               <>
                 <Title level={2}>30 道题已完成</Title>
-                <Paragraph>你已完整完成本次选择式访谈，可以生成个人画像报告。</Paragraph>
+                <Paragraph>你已完整完成所有选择，可以生成个人画像。</Paragraph>
                 <div className="ready-actions">
                   {session.canGoBack ? (
                     <Button disabled={submitting} size="large" onClick={goPrevious}>
