@@ -44,7 +44,7 @@ export type ReportResponse = {
   title: string;
   contentJson: ReportContent;
   agentContext: string;
-  skillMarkdown: string;
+  skillMarkdown: string | null;
   generationDurationMs: number | null;
   createdAt: string;
 };

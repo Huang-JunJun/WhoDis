@@ -558,6 +558,7 @@ button {
 .report-generating-note {
   color: var(--muted);
   font-size: 15px;
+  text-align: center;
 }
 
 .center-state {
@@ -729,6 +730,26 @@ button {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 15px;
   line-height: 1.75;
+}
+
+.skill-empty-state,
+.skill-generating {
+  display: flex;
+  min-height: 180px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  border: 2px dashed var(--outline);
+  border-radius: 12px 18px 12px 16px / 18px 12px 16px 12px;
+  background: var(--surface-low);
+  padding: 24px;
+  text-align: center;
+}
+
+.skill-empty-state .ant-typography,
+.skill-generating .ant-typography {
+  margin-bottom: 0;
 }
 
 .usage-card {

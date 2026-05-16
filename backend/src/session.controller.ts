@@ -37,6 +37,11 @@ export class SessionController {
     return this.reportService.createReport(id);
   }
 
+  @Post(":id/report/skill")
+  createSkillMarkdown(@Param("id") id: string) {
+    return this.reportService.createSkillMarkdown(id);
+  }
+
   @Get(":id/report")
   getReport(@Param("id") id: string) {
     return this.reportService.getReport(id);

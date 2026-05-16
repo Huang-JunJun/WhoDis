@@ -6,14 +6,11 @@ import { SelectionService } from "./selection.service";
 import { ReportContent, ReportResponse } from "./types";
 
 type AnswerForReport = {
-  selectedOptionId: string;
   selectedOptionText: string;
   selectedTags: Prisma.JsonValue;
   question: {
     module: string;
-    stage: string;
     questionText: string;
-    optionsJson: Prisma.JsonValue;
   };
 };
 
@@ -62,7 +59,7 @@ export class ReportService {
         title: "WhoDis 个人画像报告",
         contentJson: llmReport.contentJson as unknown as Prisma.InputJsonValue,
         agentContext: llmReport.agentContext,
-        skillMarkdown: llmReport.skillMarkdown,
+        skillMarkdown: null,
         generationDurationMs,
       },
     });
@@ -78,6 +75,42 @@ export class ReportService {
     return this.toReportResponse(report);
   }
 
+  async createSkillMarkdown(sessionId: string): Promise<ReportResponse> {
+    const session = await this.prisma.session.findUnique({
+      where: { id: sessionId },
+      include: {
+        answers: {
+          include: { question: true },
+          orderBy: { question: { orderNo: "asc" } },
+        },
+        report: true,
+      },
+    });
+
+    if (!session || !session.report) {
+      throw new NotFoundException("Report not found");
+    }
+
+    if (session.report.skillMarkdown) {
+      return this.toReportResponse(session.report);
+    }
+
+    const llmSkill = await this.llmService.generateSkillMarkdown({
+      contentJson: this.asReportContent(session.report.contentJson),
+      agentContext: session.report.agentContext,
+      ...this.buildSignalSummary(session.answers),
+    });
+
+    const updatedReport = await this.prisma.report.update({
+      where: { sessionId },
+      data: {
+        skillMarkdown: llmSkill.skillMarkdown,
+      },
+    });
+
+    return this.toReportResponse(updatedReport);
+  }
+
   async getReport(sessionId: string): Promise<ReportResponse> {
     const report = await this.prisma.report.findUnique({ where: { sessionId } });
     if (!report) {
@@ -87,8 +120,22 @@ export class ReportService {
   }
 
   private buildLlmInput(answers: AnswerForReport[]) {
+    return {
+      answers: answers.map((answer, index) => ({
+        orderNo: index + 1,
+        module: answer.question.module,
+        questionText: answer.question.questionText,
+        selectedOptionText: answer.selectedOptionText,
+        selectedTags: this.asStringArray(answer.selectedTags),
+      })),
+      ...this.buildSignalSummary(answers),
+    };
+  }
+
+  private buildSignalSummary(answers: AnswerForReport[]) {
     const tagSummary = new Map<string, number>();
     const moduleCounts = new Map<string, number>();
+
     for (const answer of answers) {
       moduleCounts.set(answer.question.module, (moduleCounts.get(answer.question.module) ?? 0) + 1);
       for (const tag of this.asStringArray(answer.selectedTags)) {
@@ -97,19 +144,6 @@ export class ReportService {
     }
 
     return {
-      answers: answers.map((answer, index) => ({
-        orderNo: index + 1,
-        module: answer.question.module,
-        stage: answer.question.stage,
-        questionText: answer.question.questionText,
-        options: this.asOptionArray(answer.question.optionsJson).map((option) => ({
-          ...option,
-          selected: option.id === answer.selectedOptionId,
-        })),
-        selectedOptionId: answer.selectedOptionId,
-        selectedOptionText: answer.selectedOptionText,
-        selectedTags: this.asStringArray(answer.selectedTags),
-      })),
       tagSummary: Object.fromEntries(tagSummary.entries()),
       moduleCounts: Object.fromEntries(moduleCounts.entries()),
     };
@@ -117,21 +151,6 @@ export class ReportService {
 
   private asStringArray(value: Prisma.JsonValue) {
     return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
-  }
-
-  private asOptionArray(value: Prisma.JsonValue) {
-    if (!Array.isArray(value)) {
-      return [];
-    }
-
-    return value
-      .map((item) => ({
-        id: this.readStringField(item, "id"),
-        text: this.readStringField(item, "text"),
-        tags: this.asStringArray(this.readJsonField(item, "tags")),
-        nextHints: this.asStringArray(this.readJsonField(item, "nextHints")),
-      }))
-      .filter((item) => item.id && item.text);
   }
 
   private readStringField(value: Prisma.JsonValue, key: string) {
@@ -154,7 +173,7 @@ export class ReportService {
       title: report.title,
       contentJson: this.asReportContent(report.contentJson),
       agentContext: report.agentContext,
-      skillMarkdown: report.skillMarkdown,
+      skillMarkdown: report.skillMarkdown ?? null,
       generationDurationMs: report.generationDurationMs,
       createdAt: report.createdAt,
     };

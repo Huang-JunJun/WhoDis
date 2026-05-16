@@ -40,6 +40,9 @@ export type ReportContent = {
 export type LlmReportResult = {
   contentJson: ReportContent;
   agentContext: string;
+};
+
+export type LlmSkillResult = {
   skillMarkdown: string;
 };
 
@@ -49,7 +52,7 @@ export type ReportResponse = {
   title: string;
   contentJson: ReportContent;
   agentContext: string;
-  skillMarkdown: string;
+  skillMarkdown: string | null;
   generationDurationMs: null | number;
   createdAt: Date;
 };

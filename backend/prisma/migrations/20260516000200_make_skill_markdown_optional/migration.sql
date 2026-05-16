@@ -1,0 +1,2 @@
+ALTER TABLE "Report"
+ALTER COLUMN "skillMarkdown" DROP NOT NULL;

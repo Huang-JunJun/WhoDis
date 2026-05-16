@@ -64,7 +64,7 @@ model Report {
   title                String
   contentJson          Json
   agentContext         String
-  skillMarkdown        String
+  skillMarkdown        String?
   generationDurationMs Int?
   createdAt            DateTime @default(now())
   session              Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)

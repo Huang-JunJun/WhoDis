@@ -50,6 +50,10 @@ export const api = {
     return request<ReportResponse>(`/api/session/${id}/report`, { method: "POST" });
   },
 
+  createSkillMarkdown(id: string) {
+    return request<ReportResponse>(`/api/session/${id}/report/skill`, { method: "POST" });
+  },
+
   getReport(id: string) {
     return request<ReportResponse>(`/api/session/${id}/report`);
   },

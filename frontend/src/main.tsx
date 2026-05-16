@@ -31,6 +31,13 @@ const reportSections: Array<[keyof ReportResponse["contentJson"], string]> = [
   ["deepNeeds", "深层敏感点与需求"],
 ];
 
+const reportLoadingStages = [
+  "正在整理选择路径...",
+  "正在提取画像信号...",
+  "正在生成个人画像...",
+  "正在生成 Agent 上下文...",
+];
+
 function Shell({ children, count }: { children: React.ReactNode; count?: number }) {
   const navigate = useNavigate();
 
@@ -111,6 +118,8 @@ function ChatPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(false);
+  const [reportLoadingIndex, setReportLoadingIndex] = useState(0);
+  const [reportSlowNotice, setReportSlowNotice] = useState(false);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -127,6 +136,26 @@ function ChatPage() {
   useEffect(() => {
     setSelected(question?.selectedOptionId ?? "");
   }, [question?.id, question?.selectedOptionId]);
+
+  useEffect(() => {
+    if (!generatingReport) {
+      setReportLoadingIndex(0);
+      setReportSlowNotice(false);
+      return;
+    }
+
+    const stageTimers = [
+      window.setTimeout(() => setReportLoadingIndex(1), 2800),
+      window.setTimeout(() => setReportLoadingIndex(2), 6200),
+      window.setTimeout(() => setReportLoadingIndex(3), 9800),
+    ];
+    const slowTimer = window.setTimeout(() => setReportSlowNotice(true), 20000);
+
+    return () => {
+      stageTimers.forEach((timer) => window.clearTimeout(timer));
+      window.clearTimeout(slowTimer);
+    };
+  }, [generatingReport]);
 
   async function selectAndSubmit(optionId: string) {
     if (!sessionId || submitting) return;
@@ -192,8 +221,9 @@ function ChatPage() {
             {generatingReport ? (
               <div className="report-generating">
                 <Spin size="large" />
-                <Title level={2}>正在生成个人画像</Title>
+                <Title level={2}>{reportLoadingStages[reportLoadingIndex]}</Title>
                 <Text className="report-generating-note">请保持当前页面打开，生成完成后会自动进入报告页。</Text>
+                {reportSlowNotice ? <Text className="report-generating-note">报告仍在生成中，请不要关闭页面。</Text> : null}
               </div>
             ) : (
               <>
@@ -277,6 +307,7 @@ function ReportPage() {
   const { message } = AntApp.useApp();
   const [report, setReport] = useState<ReportResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [generatingSkill, setGeneratingSkill] = useState(false);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -291,7 +322,8 @@ function ReportPage() {
   const fullReportText = useMemo(() => {
     if (!report) return "";
     const main = reportSections.map(([key, title]) => `## ${title}\n${report.contentJson[key]}`).join("\n\n");
-    return `${report.title}\n\n${main}\n\n## Agent 可导入上下文\n${report.agentContext}\n\n## Skill.md 内容\n${report.skillMarkdown}`;
+    const skillPart = report.skillMarkdown ? report.skillMarkdown : "尚未生成";
+    return `${report.title}\n\n${main}\n\n## Agent 可导入上下文\n${report.agentContext}\n\n## Skill.md 内容\n${skillPart}`;
   }, [report]);
 
   async function copy(label: string, text: string) {
@@ -302,6 +334,21 @@ function ReportPage() {
   async function restart() {
     const next = await api.createSession();
     navigate(`/chat/${next.id}`);
+  }
+
+  async function generateSkillMarkdown() {
+    if (!sessionId || !report?.id || report.skillMarkdown || generatingSkill) return;
+
+    try {
+      setGeneratingSkill(true);
+      const nextReport = await api.createSkillMarkdown(sessionId);
+      setReport(nextReport);
+      message.success("Skill.md 已生成");
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : "生成 Skill.md 失败");
+    } finally {
+      setGeneratingSkill(false);
+    }
   }
 
   return (
@@ -317,14 +364,16 @@ function ReportPage() {
               <div className="report-actions">
                 <Button onClick={() => copy("完整报告", fullReportText)}>复制完整报告</Button>
                 <Button onClick={() => copy("Agent 上下文", report.agentContext)}>复制 Agent 上下文</Button>
-                <Button onClick={() => copy("Skill.md", report.skillMarkdown)}>复制 Skill.md</Button>
+                <Button disabled={!report.skillMarkdown} onClick={() => report.skillMarkdown && copy("Skill.md", report.skillMarkdown)}>
+                  复制 Skill.md
+                </Button>
                 <Button type="primary" onClick={restart}>
                   重新开始
                 </Button>
               </div>
               <div>
                 <Title level={1}>{report.title}</Title>
-                <Paragraph>这不是标签，也不是诊断，而是一份基于本次选择路径生成的结构化个人画像。</Paragraph>
+                <Paragraph>这不是标签，而是一份基于本次选择路径生成的结构化个人画像。</Paragraph>
               </div>
             </section>
 
@@ -344,7 +393,21 @@ function ReportPage() {
 
             <Card className="context-card">
               <Title level={2}>Skill.md 内容</Title>
-              <pre>{report.skillMarkdown}</pre>
+              {report.skillMarkdown ? (
+                <pre>{report.skillMarkdown}</pre>
+              ) : generatingSkill ? (
+                <div className="skill-generating">
+                  <Spin />
+                  <Text className="report-generating-note">正在生成 Skill.md...</Text>
+                </div>
+              ) : (
+                <div className="skill-empty-state">
+                  <Paragraph>尚未生成</Paragraph>
+                  <Button type="primary" onClick={generateSkillMarkdown}>
+                    生成 Skill.md
+                  </Button>
+                </div>
+              )}
             </Card>
 
             <Card className="usage-card">
