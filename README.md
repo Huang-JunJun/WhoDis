@@ -1,60 +1,158 @@
 # WhoDis
 
-WhoDis V1 是一个“固定题库 + 动态分支”的选择式自我访谈 Web MVP。
+WhoDis 是一个“固定题库 + 动态分支”的选择式自我访谈 Web MVP。
 
-用户只通过选择题完成访谈，系统根据选择路径、标签和模块完成度，生成：
+用户不输入自由文本，只通过 30 道单选题完成访谈。系统根据选择路径、标签聚合和模块覆盖情况，最终生成：
 
-- 个人画像报告
-- Agent 可导入上下文
+- 8 个模块的个人画像报告
+- `Agent` 可导入上下文
+- 按需生成的 `Skill.md`
+
+当前线上地址：
+
+- [http://whodis.cn](http://whodis.cn)
+
+## 1. 产品定位
+
+WhoDis V1 的目标不是做人格测试，也不是做心理诊断，而是把用户的选择路径整理成一份结构化的个人上下文，方便：
+
+- 用户更清楚地理解自己的思考方式、行动偏好和压力反应
+- 用户把这份画像复制到其他 AI 工具中使用
+- 其他 AI 在给建议、拆任务、做复盘时更贴近用户的实际偏好
+
+V1 明确不做：
+
+- 登录注册
+- 用户中心
+- 历史报告列表
+- 支付
+- 分享闭环功能
+- PDF 导出
+- 后台管理
+- 移动 App
+- AI 动态生成题目
+- 自由填空题
+- MBTI / 人格类型输出
+- 心理诊断
+
+## 2. 当前功能
+
+### 2.1 页面
+
+- `/`：首页
+- `/chat/:sessionId`：访谈页
+- `/report/:sessionId`：报告页
+
+### 2.2 访谈流程
+
+- 创建 `session` 后进入第一题
+- 第一题固定为性格结构题：`你觉得自己平时更接近哪一种人？`
+- 每题固定 4 个选项
+- 点击选项后自动高亮并立即提交
+- 提交中禁用其他选项，避免重复点击
+- 第二题开始可点击“上一题”
+- 回退后重新选择，会覆盖当前题答案，并清空后续题目与答案，重新生成后续路径
+- 用户必须完整完成 30 题后，才允许生成报告
+
+### 2.3 报告内容
+
+报告正文固定只包含以下 8 个模块：
+
+1. 整体画像概括
+2. 核心底色
+3. 性格结构
+4. 行为与行动模式
+5. 内耗循环
+6. 关系模式
+7. 压力与防御方式
+8. 深层敏感点与需求
+
+报告底部提供：
+
+- `Agent` 可导入上下文
 - `Skill.md` 内容
+- “如何使用这份画像？”说明模块
 
-V1 不做登录注册、用户中心、历史报告、支付、分享、PDF、后台管理、移动 App、AI 动态生成题目、自由填空题、MBTI 人格类型或心理诊断。
+### 2.4 Skill.md 按需生成
 
-## 技术栈
+为了减少首次报告生成时间，当前逻辑已经调整为：
 
-- Monorepo：pnpm workspace
-- 前端：React + TypeScript + Vite + Ant Design
-- 后端：NestJS + TypeScript
-- 数据库：PostgreSQL
-- ORM：Prisma
-- Node：`>=20.19.0`，当前项目建议使用 `.nvmrc` 中的 `22.21.1`
+- 首次生成报告时，只生成：
+  - 8 个画像模块
+  - `Agent` 可导入上下文
+- 不再同步生成 `Skill.md`
+- 报告页默认显示“尚未生成”
+- 用户点击“生成 Skill.md”后，才会单独调用模型生成并保存
+- 如果当前报告已经存在 `Skill.md`，则直接展示，不会重复生成
 
-## 目录结构
+## 3. 技术栈
+
+- Monorepo：`pnpm workspace`
+- 前端：`React 19` + `TypeScript` + `Vite` + `Ant Design`
+- 后端：`NestJS` + `TypeScript`
+- 数据库：`PostgreSQL`
+- ORM：`Prisma`
+- 进程管理：`PM2`
+- 反向代理：`Nginx`
+
+Node 版本要求：
+
+- `>= 20.19.0`
+
+项目脚本当前默认通过本机 `nvm` 中的 Node 运行，根目录 `package.json` 里固定了：
+
+- `~/.nvm/versions/node/v22.21.1/bin`
+
+如果你的本地 Node 版本不足，请先切换或升级到 Node 20+。
+
+## 4. 目录结构
 
 ```text
 WhoDis/
-  backend/              # NestJS API 服务
-    prisma/             # Prisma schema 与迁移
-    src/                # 后端业务代码、题库、选题、报告生成
-  frontend/             # React Web 前端
-    src/                # 三页面路由、API 客户端、样式
-  docker-compose.yml    # 本地 PostgreSQL
-  pnpm-workspace.yaml   # workspace 配置
+├── backend/                         # NestJS API
+│   ├── prisma/                      # Prisma schema 与迁移
+│   │   └── migrations/
+│   ├── src/
+│   │   ├── llm.service.ts           # DeepSeek 调用封装
+│   │   ├── question-bank.ts         # 固定题库
+│   │   ├── report.service.ts        # 报告与 Skill.md 生成
+│   │   ├── selection.service.ts     # 动态选题规则
+│   │   ├── session.controller.ts    # API 路由
+│   │   └── session.service.ts       # session / 答题流程
+│   └── .env.example
+├── frontend/
+│   ├── public/                      # favicon、logo、分享图
+│   ├── src/
+│   │   ├── api.ts                   # 前端接口请求
+│   │   ├── main.tsx                 # 页面与路由
+│   │   ├── styles.css               # 全局样式
+│   │   └── types.ts                 # 前端类型
+│   └── index.html                   # meta / favicon / share card
+├── docker-compose.yml               # 本地 PostgreSQL
+├── package.json                     # workspace 脚本
+└── pnpm-workspace.yaml
 ```
 
-## 本地启动
+## 5. 本地开发
 
-先确保 Docker Desktop 已启动。
+### 5.1 环境准备
+
+需要先准备：
+
+- Node.js 20+
+- pnpm
+- Docker / Docker Desktop
+
+### 5.2 安装与启动
 
 ```bash
 cd /Users/Project/WhoDis
 
-# 安装依赖
 pnpm install
-
-# 启动 PostgreSQL
 docker compose up -d postgres
-
-# 创建本地环境变量
 cp backend/.env.example backend/.env
-
-# 生成 Prisma Client
 pnpm db:generate
-
-# 初始化数据库表
 pnpm db:migrate
-
-# 同时启动前后端
 pnpm dev
 ```
 
@@ -64,9 +162,13 @@ pnpm dev
 - 后端：`http://127.0.0.1:3000/`
 - PostgreSQL：`localhost:5432`
 
-如果 `5173` 被占用，Vite 会自动切换端口，请以终端输出为准。
+说明：
 
-## 常用命令
+- 如果 `5173` 被占用，Vite 会自动切换端口
+- 如果 `3000` 被占用，后端启动会失败，需要先释放端口
+- 本地调试时，如果浏览器显示的不是最新端口，请以终端输出为准
+
+### 5.3 常用命令
 
 ```bash
 # 启动前后端
@@ -84,17 +186,194 @@ pnpm build
 # 生成 Prisma Client
 pnpm db:generate
 
-# 执行数据库迁移
+# 执行本地迁移
 pnpm db:migrate
 ```
 
-## 页面
+## 6. 环境变量
 
-- `/`：首页，创建 session 并进入访谈
-- `/chat/:sessionId`：访谈页，展示当前问题、题数提示和 4 个选项
-- `/report/:sessionId`：报告页，展示 8 个正文模块、使用说明、Agent 上下文和 Skill.md
+`backend/.env.example`：
 
-## 后端接口
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/whodis?schema=public"
+LLM_PROVIDER="deepseek"
+DEEPSEEK_API_KEY="sk-your-deepseek-api-key"
+DEEPSEEK_BASE_URL="https://api.deepseek.com"
+DEEPSEEK_MODEL="deepseek-v4-flash"
+```
+
+说明：
+
+- `DATABASE_URL`：本地 PostgreSQL 连接
+- `LLM_PROVIDER`：当前仅支持 `deepseek`
+- `DEEPSEEK_API_KEY`：必填，不要提交到 Git
+- `DEEPSEEK_BASE_URL`：默认 `https://api.deepseek.com`
+- `DEEPSEEK_MODEL`：当前默认 `deepseek-v4-flash`
+
+## 7. 核心业务规则
+
+### 7.1 题库与分支
+
+- 题库固定，不由 AI 生成
+- 每题固定 4 个选项
+- 每个选项都包含：
+  - `text`
+  - `tags`
+  - `nextHints`
+- 系统根据最近一次选择、模块覆盖和阶段优先级，动态选择下一题
+
+当前题库共 32 道：
+
+- `personality_structure`：6
+- `behavior_action`：5
+- `relationship_pattern`：5
+- `pressure_defense`：5
+- `core_base`：4
+- `inner_loop`：4
+- `deep_needs`：3
+
+### 7.2 选题规则
+
+当前实现位于：
+
+- [backend/src/selection.service.ts](/Users/Project/WhoDis/backend/src/selection.service.ts)
+
+实际逻辑：
+
+- 已答题不重复
+- 前 1-5 题优先：
+  - `personality_structure`
+  - `behavior_action`
+- 第 6-10 题优先：
+  - `relationship_pattern`
+  - `pressure_defense`
+- 第 11-15 题优先：
+  - `core_base`
+  - `inner_loop`
+  - `deep_needs`
+- 15 题后优先补齐缺失模块
+- 30 题后允许生成报告
+- 如果题库被问完，也允许生成报告
+
+### 7.3 报告生成限制
+
+当前实现已经收敛为：
+
+- `questionCount >= 30` 才可生成报告
+
+也就是说：
+
+- 不存在 15 题直接生成
+- 15 题后的逻辑仅用于补齐缺失模块
+- `SelectionService.canGenerateReport()` 当前只在 30 题时返回 `true`
+
+## 8. 报告生成与 LLM
+
+### 8.1 当前模型职责
+
+DeepSeek 不参与：
+
+- 出题
+- 题库改写
+- 分支选题
+- session 状态控制
+
+DeepSeek 只参与：
+
+- 报告正文生成
+- `Agent` 可导入上下文生成
+- `Skill.md` 按需生成
+
+### 8.2 首次报告生成输入
+
+为了减少生成耗时，当前传给模型的输入已经瘦身为：
+
+- 题号 `orderNo`
+- 模块 `module`
+- 题目文本 `questionText`
+- 用户选中的选项文本 `selectedOptionText`
+- 选中标签 `selectedTags`
+- 标签统计 `tagSummary`
+- 模块回答数量 `moduleCounts`
+
+当前不会再把以下内容传给首次报告生成：
+
+- 每题完整 4 个选项全文
+- 未选择选项全文
+
+### 8.3 Skill.md 生成输入
+
+点击“生成 Skill.md”时，模型输入为：
+
+- 报告正文 `contentJson`
+- `agentContext`
+- `tagSummary`
+- `moduleCounts`
+
+### 8.4 当前等待体验
+
+报告生成中，前端会显示阶段式文案：
+
+- `正在整理选择路径...`
+- `正在提取画像信号...`
+- `正在生成个人画像...`
+- `正在生成 Agent 上下文...`
+
+当生成超过 20 秒时，会额外提示：
+
+- `报告仍在生成中，请不要关闭页面。`
+
+单独生成 `Skill.md` 时显示：
+
+- `正在生成 Skill.md...`
+
+### 8.5 耗时记录
+
+`Report` 表当前已经记录：
+
+- `generationDurationMs`
+
+该字段表示“首次生成报告”的服务端耗时，单位为毫秒。
+
+说明：
+
+- 这是报告正文 + `AgentContext` 的生成耗时
+- 当前不包含后续单独生成 `Skill.md` 的耗时
+
+## 9. 前端交互说明
+
+### 9.1 首页
+
+- 手绘纸张风格 UI
+- 顶部品牌 logo + favicon 已接入
+- 已配置分享卡片 meta：
+  - `title`
+  - `description`
+  - `og:*`
+  - `twitter:*`
+
+### 9.2 访谈页
+
+- 点击选项自动进入下一题
+- 没有“下一题”按钮
+- 顶部显示已完成题数
+- 题面显示 `x / 30`
+- 支持上一题
+- 移动端已处理顶部栏覆盖问题
+
+### 9.3 报告页
+
+- 显示 8 个正文模块
+- 支持复制完整报告
+- 支持复制 `Agent` 上下文
+- 如果 `Skill.md` 已生成，支持复制 `Skill.md`
+- 如果 `Skill.md` 未生成，显示“尚未生成”并允许按需生成
+
+## 10. 后端接口
+
+当前接口位于：
+
+- [backend/src/session.controller.ts](/Users/Project/WhoDis/backend/src/session.controller.ts)
 
 ```text
 POST /api/session/create
@@ -102,168 +381,162 @@ GET  /api/session/:id
 POST /api/session/:id/answer
 POST /api/session/:id/previous
 POST /api/session/:id/report
+POST /api/session/:id/report/skill
 GET  /api/session/:id/report
 ```
 
-## 核心规则
+### 10.1 接口说明
 
-- 题库固定，路径动态
-- 每题固定 4 个选项
-- 用户只做选择，不输入文字
-- 每个选项绑定 `tags` 和 `nextHints`
-- 点击选项后自动提交并进入下一题
-- 第二题开始可以返回上一题
-- 回退后重新选择会覆盖当前题答案，并清空后续题目和答案，重新生成后续路径
-- 已答题不会重复
-- 第一题固定为“你觉得自己平时更接近哪一种人？”
-- 必须完整完成 30 道题后才允许生成报告
-- 15 题后会优先补齐缺失模块，但不会提前生成报告
-- 报告不输出人格类型，不做心理诊断
+`POST /api/session/create`
 
-## 题库模块
+- 创建 session
+- 写入第一题
 
-当前题库共 32 道：
+`GET /api/session/:id`
 
-- `personality_structure`：6 道
-- `behavior_action`：5 道
-- `relationship_pattern`：5 道
-- `pressure_defense`：5 道
-- `core_base`：4 道
-- `inner_loop`：4 道
-- `deep_needs`：3 道
+- 获取 session 状态
+- 返回当前题、当前题数、是否可返回上一题
 
-模块最低覆盖要求：
+`POST /api/session/:id/answer`
 
-- `personality_structure >= 2`
-- `behavior_action >= 2`
-- `relationship_pattern >= 2`
-- `pressure_defense >= 2`
-- `core_base >= 1`
-- `inner_loop >= 1`
-- `deep_needs >= 1`
+- 提交当前题选择
+- 自动生成下一题或进入 `ready_to_report`
 
-## 报告结构
+`POST /api/session/:id/previous`
 
-报告正文只包含 8 个模块：
+- 回到上一题
 
-1. 整体画像概括
-2. 核心底色
-3. 性格结构
-4. 行为与行动模式
-5. 内耗循环
-6. 关系模式
-7. 压力与防御方式
-8. 深层敏感点与需求
+`POST /api/session/:id/report`
 
-报告底部单独输出：
+- 在完成 30 题后生成报告
+- 首次只生成 8 个模块和 `agentContext`
 
-- Agent 可导入上下文
-- Skill.md 内容
+`POST /api/session/:id/report/skill`
 
-报告正文之后会展示“如何使用这份画像？”说明模块，提示用户可以把画像作为个人上下文复制到其他 AI 工具中使用。
+- 如果当前报告还没有 `Skill.md`，则单独生成并保存
 
-复制建议：
+`GET /api/session/:id/report`
 
-- 快速使用：复制 Agent 上下文
-- 完整导入：复制 Skill.md
-- 自己保存：复制完整报告
+- 获取报告详情
 
-项目不提供真实第三方导入功能，不写“一键导入”，也不承诺所有 AI 平台都支持 Skill。
+## 11. 数据库模型
 
-## 数据库
+Prisma schema 位于：
 
-本地数据库连接示例见：
+- [backend/prisma/schema.prisma](/Users/Project/WhoDis/backend/prisma/schema.prisma)
 
-```text
-backend/.env.example
-```
-
-默认连接：
-
-```text
-postgresql://postgres:postgres@localhost:5432/whodis?schema=public
-```
-
-Prisma 模型包括：
+核心模型：
 
 - `Session`
 - `Question`
 - `Answer`
 - `Report`
 
-## DeepSeek 报告生成
+### 11.1 Session
 
-WhoDis V1 的题库和选题逻辑仍然完全由本地规则控制，AI 不生成题目。
+- `status`
+- `currentQuestionId`
+- `questionCount`
+- `canGenerateReport`
+- `createdAt`
+- `updatedAt`
 
-DeepSeek 只用于用户完成 30 题后的报告生成：
+### 11.2 Question
 
-- 8 个正文模块
-- Agent 可导入上下文
-- Skill.md 内容
+- `bankQuestionId`
+- `module`
+- `stage`
+- `questionText`
+- `optionsJson`
+- `orderNo`
 
-生成报告时会向 DeepSeek 传入：
+### 11.3 Answer
 
-- 30 道题的题目顺序
-- 每题所属模块和阶段
-- 每题题目文本
-- 每题完整 4 个选项
-- 哪个选项被选中
-- 每个选项的 tags 和 nextHints
-- 用户选中项的 tags
-- tag 汇总统计
-- 模块回答数量统计
+- `selectedOptionId`
+- `selectedOptionText`
+- `selectedTags`
+- `nextHints`
 
-DeepSeek 不参与出题，也不会改变下一题选择逻辑。
+### 11.4 Report
 
-`Skill.md` 会按“给其他 AI 使用的长期个人上下文说明”生成，而不是简单复述报告正文。它会包含：
+- `title`
+- `contentJson`
+- `agentContext`
+- `skillMarkdown`
+- `generationDurationMs`
+- `createdAt`
 
-- 用户画像摘要
-- 核心特征
-- 沟通偏好
-- 决策与行动支持方式
-- 学习与成长支持方式
-- 压力状态下的支持方式
-- 关系与情绪分析方式
-- 需要避免
-- 更适合的帮助方式
-- 可直接复制给 AI 的使用说明
+## 12. 部署说明
 
-后端通过 `LlmService` 统一封装模型调用。需要在 `backend/.env` 中配置：
+当前生产环境：
 
-```env
-LLM_PROVIDER="deepseek"
-DEEPSEEK_API_KEY="你的 DeepSeek API Key"
-DEEPSEEK_BASE_URL="https://api.deepseek.com"
-DEEPSEEK_MODEL="deepseek-v4-flash"
+- 服务器：`whodis-prod`
+- 部署目录：`/var/www/WhoDis`
+- 前端目录：`/var/www/WhoDis/frontend/dist`
+- 后端进程：`whodis-api`
+- 域名：
+  - [http://whodis.cn](http://whodis.cn)
+  - [http://www.whodis.cn](http://www.whodis.cn)
+
+### 12.1 生产更新命令
+
+如果服务器 Git 能正常拉取：
+
+```bash
+ssh whodis-prod
+source ~/.nvm/nvm.sh
+cd /var/www/WhoDis
+git pull --ff-only origin main
+pnpm install --frozen-lockfile
+pnpm db:generate
+pnpm --filter @whodis/backend exec prisma migrate deploy
+pnpm build
+pm2 restart whodis-api
+sudo nginx -t
+sudo systemctl reload nginx
 ```
 
-如果 DeepSeek 调用失败，后端会返回“模型调用失败”错误，不会写入报告。
+说明：
 
-相关代码：
+- 当前服务器曾出现 `https` 方式 `git fetch / pull` 卡住的问题
+- 遇到这种情况时，部署改为从本地已推送提交打包同步到服务器
+- 部署时不要覆盖服务器 `backend/.env`
 
-- `backend/src/llm.service.ts`
-- `backend/src/report.service.ts`
+## 13. 已知注意事项
 
-## 验收点
+- `frontend/dist/` 是构建产物，不作为日常源码编辑目录
+- `.env` 不能提交到 Git
+- `stitch/` 目录已加入忽略，不再提交设计稿
+- `node_modules/` 不应提交到 GitHub
+- 如果本地 `3000` 端口被占用，后端会直接启动失败
+- 如果 Docker 没启动，本地数据库相关命令会失败
 
-- 首页能创建 session 并进入访谈页
-- 第一题固定为性格结构题
+## 14. 当前验收状态
+
+当前项目已经具备以下能力：
+
+- 首页可创建 `session`
+- 第一题固定
 - 每题固定 4 个选项
-- 用户选择后进入不同题目路径
+- 点击选项自动进入下一题
+- 可返回上一题并覆盖后续路径
 - 已答题不重复
-- 点击选项后自动进入下一题
-- 第二题开始可以上一题
-- 回退后重新选择会重新生成后续路径
-- 30 题前不能生成报告
-- 完整完成 30 题后才可生成报告
+- 完整完成 30 题后可生成报告
 - 报告只包含 8 个正文模块
-- 报告页包含“如何使用这份画像？”说明模块
-- 报告底部包含 Agent 上下文和 Skill.md
-- 可复制完整报告、Agent 上下文、Skill.md
-- 不出现 MBTI、人格类型、心理诊断、“AI 眼中的你”等表达
+- 报告可生成 `Agent` 上下文
+- `Skill.md` 支持按需生成
+- 生成报告时有阶段式 loading
+- 报告生成耗时已落库
 
-## 当前限制
+## 15. 相关文件
 
-- 需要本地 PostgreSQL 可用后才能完整测试 API
-- Docker CLI 存在但 Docker daemon 未启动时，`docker compose up -d postgres` 会失败
-- 前端构建时 Ant Design 可能触发 Vite chunk size 提示，这是包体提示，不影响运行
+如果你要继续开发，优先看这些文件：
+
+- [backend/src/question-bank.ts](/Users/Project/WhoDis/backend/src/question-bank.ts)
+- [backend/src/selection.service.ts](/Users/Project/WhoDis/backend/src/selection.service.ts)
+- [backend/src/session.service.ts](/Users/Project/WhoDis/backend/src/session.service.ts)
+- [backend/src/report.service.ts](/Users/Project/WhoDis/backend/src/report.service.ts)
+- [backend/src/llm.service.ts](/Users/Project/WhoDis/backend/src/llm.service.ts)
+- [frontend/src/main.tsx](/Users/Project/WhoDis/frontend/src/main.tsx)
+- [frontend/src/api.ts](/Users/Project/WhoDis/frontend/src/api.ts)
+- [frontend/src/styles.css](/Users/Project/WhoDis/frontend/src/styles.css)
